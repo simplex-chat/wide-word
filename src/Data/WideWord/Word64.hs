@@ -43,9 +43,7 @@ module Data.WideWord.Word64
 
 import Data.Bits (shiftL, shiftR)
 
-#if WORD_SIZE_IN_BITS == 32
-import GHC.Exts (Word#, Word64#, uncheckedShiftRL64#, word64ToWord#)
-#else
+#if WORD_SIZE_IN_BITS == 64
 import Data.WideWord.Compat
 #endif
 
