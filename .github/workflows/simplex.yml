@@ -1,0 +1,40 @@
+name: simplex
+on:
+  - push
+  - pull_request
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    name: ${{ matrix.arch }}, GHC ${{ matrix.ghc }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    container:
+      image: ${{ matrix.arch }}/ubuntu:bionic
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [i386, amd64]
+        ghc: ["8.10.7", "9.6.3"]
+    env:
+      INDEX_STATE: "2023-12-12T00:00:00Z"
+    steps:
+    - name: Install
+      run: |
+        apt-get update -y
+        apt-get install -y autoconf build-essential zlib1g-dev libgmp-dev curl libncurses5 libtinfo5 libncurses5-dev libtinfo-dev
+        curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 BOOTSTRAP_HASKELL_INSTALL_NO_STACK=1 BOOTSTRAP_HASKELL_GHC_VERSION=${{ matrix.ghc }} sh
+    - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1.2.0
+    - name: Test
+      run: |
+        export LANG=C.UTF-8
+        source ~/.ghcup/env
+        ghc --info | grep -E '"target word size"'
+        cabal update "hackage.haskell.org,$INDEX_STATE"
+        cabal test --index-state="$INDEX_STATE" --test-show-details=direct --enable-tests all
