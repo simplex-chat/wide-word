@@ -16,13 +16,19 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     container:
-      image: ${{ matrix.arch }}/ubuntu:bionic
+      image: ${{ matrix.image }}
     strategy:
       fail-fast: false
       matrix:
         arch: [i386, amd64]
         ghc: ["8.10.7", "9.6.3"]
+        include:
+          - arch: i386
+            image: i386/ubuntu:bionic
+          - arch: amd64
+            image: amd64/ubuntu:focal
     env:
+      DEBIAN_FRONTEND: noninteractive
       INDEX_STATE: "2023-12-12T00:00:00Z"
     steps:
     - name: Install
